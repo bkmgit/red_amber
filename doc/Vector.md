@@ -513,3 +513,61 @@ vector.shift(fill: Float::NAN)
 #<RedAmber::Vector(:double, size=5):0x0000000000011d3c>                    
 [NaN, 1.0, 2.0, 3.0, 4.0]
 ```
+
+### `split`
+
+Split string type Vector with any ASCII whitespace as separator.
+Returns an Array of Vectors.
+
+```ruby
+vector = Vector.new(['a b', 'c d', 'e f'])
+vector.split
+
+#=> 
+[#<RedAmber::Vector(:string, size=3):0x00000000000363a8>                                
+["a", "c", "e"]                                    
+,                                                  
+ #<RedAmber::Vector(:string, size=3):0x00000000000363bc>
+["b", "d", "f"]                                    
+]
+```
+It will be used for column splitting in DataFrame.
+
+
+### `merge(other, separator: ' ')`
+
+Merge String or other string Vector to self using aseparator.
+Self must be a string Vector.
+If other is a String it will be broadcasted.
+Returns merged string Vector.
+
+```ruby
+# with vector
+vector = Vector.new(%w[a c e])
+other = Vector.new(%w[b d f])
+vector.merge(other)
+
+#=>
+#<RedAmber::Vector(:string, size=3):0x0000000000038b80>
+["a b", "c d", "e f"]
+```
+
+```ruby
+# with vector
+vector = Vector.new(%w[a c e])
+
+#=>
+#<RedAmber::Vector(:string, size=3):0x00000000000446b0>
+["a x", "c x", "e x"]
+```
+
+```ruby
+# with vector
+vector = Vector.new(%w[a c e])
+other = Vector.new(%w[b d f])
+vector.merge(other, separator: '')
+
+#=>
+#<RedAmber::Vector(:string, size=3):0x0000000000038b80>
+["ab", "cd", "ef"]
+```
