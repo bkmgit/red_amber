@@ -7,6 +7,9 @@ module RedAmber
   # mix-in for class Vector
   # Functions to make up some data (especially missing) for new data.
   module VectorUpdatable
+    # Add properties to Arrow::Array and Arrow::ChunkedArray
+    using RefineArrayLike
+
     # Replace data
     # @param specifier [Array, Vector, Arrow::Array] index or booleans.
     # @param replacer [Scalar, Array, Vector, Arrow::Array] new data to replace for.
@@ -78,6 +81,20 @@ module RedAmber
       else # amount == 0
         self
       end
+    end
+
+    # Split string Vector according to any ASCII whitespace.
+    #
+    # @return [Array<Vector>] an Array of Vectors.
+    def split
+      raise VectorTypeError, "self is not a string Vector: #{self}" if empty? || !string?
+
+      list = find(:ascii_split_whitespace).execute([data]).value
+      result = []
+      (0...list.first.length).map do |i|
+        result << Vector.create(find(:list_element).execute([list, i]).value)
+      end
+      result
     end
 
     private

@@ -172,4 +172,33 @@ class VectorTest < Test::Unit::TestCase
       assert_equal_array vector, vector.shift(0)
     end
   end
+
+  sub_test_case '#split' do
+    test '#split a invalid Vector' do
+      assert_raise(VectorTypeError) { Vector.new.split } # Empty Vector is string type
+      assert_raise(VectorTypeError) { Vector.new(1, 2, 3).split }
+    end
+
+    test '#split' do
+      array = ['a b', 'c d', 'e f']
+      expect = array.map(&:split).transpose
+      assert_equal expect, Vector.new(array).split
+    end
+
+    test '#split tab separator' do
+      array = ['a\tb', 'c\td', 'e\tf']
+      expect = array.map(&:split).transpose
+      assert_equal expect, Vector.new(array).split
+    end
+
+    test '#split no separator' do
+      array = %w[ab cd ef]
+      assert_equal [array], Vector.new(array).split
+    end
+
+    test '#split invalid split' do
+      array = ['a b', 'cd', 'e f g']
+      assert_raise(Arrow::Error::Invalid) { Vector.new(array).split }
+    end
+  end
 end
