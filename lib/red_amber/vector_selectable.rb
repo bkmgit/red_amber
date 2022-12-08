@@ -15,23 +15,44 @@ module RedAmber
       Vector.create(datum.value)
     end
 
-    # vector version of selection by indices
-    # TODO: support for the option `boundscheck: true``
-    def take(*indices)
-      case indices
-      in [Vector => v] if v.numeric?
-        Vector.create(take_by_vector(v))
-      in []
-        Vector.new
-      else
-        v = Vector.new(indices.flatten)
-        raise VectorArgumentError, "argument must be a integers: #{indices}" unless v.numeric?
+    # Select elements in the self by indices.
+    #
+    # @param indices [Array<Numeric>, Vector] indices.
+    # @yield [Array<Numeric>, Vector] indices.
+    # @return [Vector] Vector by selected elements.
+    #
+    #   TODO: support for the option `boundscheck: true`
+    def take(*indices, &block)
+      if block
+        raise VectorArgumentError, 'Must not specify both arguments and block.' unless indices.empty?
 
-        Vector.create(take_by_vector(v))
+        indices = [yield]
       end
+
+      vector =
+        case indices
+        in [Vector => v] if v.numeric?
+          return Vector.create(take_by_vector(v))
+        in []
+          return Vector.new
+        in [(Arrow::Array | Arrow::ChunkedArray) => aa]
+          Vector.create(aa)
+        else
+          Vector.new(indices.flatten)
+        end
+
+      raise VectorArgumentError, "argument must be a integers: #{indices}" unless vector.numeric?
+
+      Vector.create(take_by_vector(vector))
     end
 
-    # TODO: support for the option `null_selection_behavior: :drop``
+    # Select elements in the self by booleans.
+    #
+    # @param indices [Array<true, false, nil>, Vector] booleans.
+    # @yield [Array<true, false, nil>, Vector] booleans.
+    # @return [Vector] Vector by selected elements.
+    #
+    #   TODO: support for the option `null_selection_behavior: :drop`
     def filter(*booleans, &block)
       if block
         raise VectorArgumentError, 'Must not specify both arguments and block.' unless booleans.empty?
@@ -63,8 +84,12 @@ module RedAmber
     alias_method :select, :filter
     alias_method :find_all, :filter
 
-    # @param indices
-    # @param booleans
+    # Select elements in the self by indices or booleans.
+    #
+    # @param indices [Array<Numeric, true, false, nil>, Vector] specifier.
+    # @yield [Array<Numeric, true, false, nil>, Vector] specifier.
+    # @return [scalar, Array] returns scalar or array.
+    #
     def [](*args)
       array =
         case args
